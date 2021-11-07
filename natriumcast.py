@@ -34,7 +34,7 @@ parser.add_argument('-b', '--banano', action='store_true', help='Run for BANANO 
 parser.add_argument('--host', type=str, help='Host to listen on (e.g. 127.0.0.1)', default='127.0.0.1')
 parser.add_argument('--path', type=str, help='(Optional) Path to run application on (for unix socket, e.g. /tmp/natriumapp.sock', default=None)
 parser.add_argument('-p', '--port', type=int, help='Port to listen on', default=5076)
-parser.add_argument('-ws', '--websocket-url', type=str, help='Nano websocket URI', default='ws://[::1]:7078')
+parser.add_argument('-ws', '--websocket-url', type=str, help='Nano websocket URI', default='ws://[::1]:7048')
 parser.add_argument('--log-file', type=str, help='Log file location', default='natriumcast.log')
 parser.add_argument('--log-to-stdout', action='store_true', help='Log to stdout', default=False)
 
@@ -61,7 +61,7 @@ except Exception as e:
     parser.print_help()
     sys.exit(0)
 
-price_prefix = 'coingecko:nano' if not banano_mode else 'coingecko:banano'
+price_prefix = 'coingecko:paw' if not banano_mode else 'coingecko:banano'
 
 # Environment configuration
 
