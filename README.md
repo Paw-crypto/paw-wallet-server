@@ -39,11 +39,11 @@ Generally:
 4) Run
 
 ```
-sudo adduser natriumuser # Add natriumuser
-sudo usermod -aG sudo natriumuser # Add natriumuser to sudo group
-sudo usermod -aG www-data natriumuser # Add natriumuser to www-data group
+sudo adduser pawwalletuser # Add natriumuser
+sudo usermod -aG sudo pawwalletuser # Add natriumuser to sudo group
+sudo usermod -aG www-data pawwallet # Add natriumuser to www-data group
 sudo su - natriumuser # Change to natriumuser
-git clone https://github.com/appditto/natrium-wallet-server.git natriumcast # Clone repository
+git clone https://github.com/paw-crypto/paw-wallet-server.git natriumcast # Clone repository
 ```
 
 Ensure python3.6 or newer is installed (`python3 --version`) and
@@ -72,19 +72,19 @@ The recommended configuration is to run the server behind [nginx](https://www.ng
 
 Next, we'll define a systemd service unit
 
-/etc/systemd/system/natriumcast@.service
+/etc/systemd/system/pawwallett@.service
 ```
 [Unit]
-Description=Natrium Server
+Description=Paw Wallet Server
 After=network.target
 
 [Service]
 Type=simple
-User=natriumuser
+User=pawwalletuser
 Group=www-data
-EnvironmentFile=/home/natriumuser/natriumcast/.env
-WorkingDirectory=/home/natriumuser/natriumcast
-ExecStart=/home/natriumuser/natriumcast/venv/bin/python natriumcast.py --host 127.0.0.1 --port %i --log-file /tmp/natriumcast%i.log
+EnvironmentFile=/home/pawwalletuser/paw-wallet-server/.env
+WorkingDirectory=/home/pawwalletuser/paw-wallet-server
+ExecStart=/home/natriumuser/natriumcast/venv/bin/python natriumcast.py --host 127.0.0.1 --port %i --log-file /tmp/pawwallett%i.log
 Restart=on-failure
 
 [Install]
@@ -94,9 +94,9 @@ WantedBy=multi-user.target
 Enable this service and start it, ensure all is working as expected
 
 ```
-sudo systemctl enable natriumcast@5076
-sudo systemctl start natriumcast@5076
-sudo systemctl status natriumcast@5076
+sudo systemctl enable pawwallet@5076
+sudo systemctl start pawwallet@5076
+sudo systemctl status pawwallet@5076
 ```
 
 Next, configure nginx to proxy requests to this server
@@ -111,7 +111,7 @@ upstream natrium_nodes {
 }
 
 server {
-        server_name app.natrium.io;
+        server_name walletserver.paw.digital;
 
         location / {
                 proxy_pass http://natrium_nodes;
@@ -132,7 +132,7 @@ server {
 Enable this configuration and restart nginx
 
 ```
-sudo ln -s /etc/nginx/sites-available/app.natrium.io /etc/nginx/sites-enabled/app.natrium.io
+sudo ln -s /etc/nginx/sites-available/walletserver.paw.digital /etc/nginx/sites-enabled/walletserver.paw.digital
 sudo service nginx restart
 ```
 
