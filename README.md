@@ -1,13 +1,14 @@
-# Natrium (NANO) and Kalium (BANANO) Wallet Server
+# Natrium (NANO), Kalium (BANANO) and Biota (PAW) Wallet Server
 
-## What is Natrium, Kalium, NANO, BANANO?
+## What is Natrium, Kalium, Buita, NANO, BANANO, PAW?
 
-Natrium and Kalium are mobile wallets written with Flutter. NANO and BANANO are cryptocurrencies.
+Natrium, Kalium and PAW are mobile wallets written with Flutter. NANO, BANANO and PAW are cryptocurrencies.
 
 | Link | Description |
 | :----- | :------ |
 [natrium.io](https://natrium.io) | Natrium Homepage
 [kalium.banano.cc](https://kalium.banano.cc) | Kalium Homepage
+[PAW.digital](https://paw.digital) | PAW Homepage
 [appditto.com](https://appditto.com) | Appditto Homepage
 
 ## Requirements
@@ -223,3 +224,10 @@ backend rpc-backend
         server rpcbackend2 <node 2 server or localhost>:<rpc port> check
         server rpcbackend3 <node 3 server or localhost>:<rpc port> check
 ```
+
+## Acknowledgements
+
+Special thanks to the following!
+- [Natrium](https://github.com/appditto/natrium_wallet_flutter) - The original one
+- [Kalium](https://github.com/BananoCoin/kalium_wallet_flutter) - The second fork of Natrium
+
