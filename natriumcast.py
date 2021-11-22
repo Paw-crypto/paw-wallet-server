@@ -19,11 +19,21 @@ import aiofcm
 import aioredis
 from aiohttp import ClientSession, WSMessage, WSMsgType, log, web
 import aiohttp_cors
-
+from pyfcm import FCMNotification
 from rpc import RPC, allowed_rpc_actions
 from util import Util
 from nano_websocket import WebsocketClient
 from alerts import get_active_alert
+
+# Monkey patch to force IPv4, since FB seems to hang on IPv6
+import socket
+old_getaddrinfo = socket.getaddrinfo
+def new_getaddrinfo(*args, **kwargs):
+    responses = old_getaddrinfo(*args, **kwargs)
+    return [response
+            for response in responses
+            if response[0] == socket.AF_INET]
+socket.getaddrinfo = new_getaddrinfo
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -34,7 +44,7 @@ parser.add_argument('-b', '--banano', action='store_true', help='Run for BANANO 
 parser.add_argument('--host', type=str, help='Host to listen on (e.g. 127.0.0.1)', default='127.0.0.1')
 parser.add_argument('--path', type=str, help='(Optional) Path to run application on (for unix socket, e.g. /tmp/natriumapp.sock', default=None)
 parser.add_argument('-p', '--port', type=int, help='Port to listen on', default=5076)
-parser.add_argument('-ws', '--websocket-url', type=str, help='Nano websocket URI', default='ws://[::1]:7048')
+parser.add_argument('-ws', '--websocket-url', type=str, help='Nano websocket URI', default='ws://127.0.0.1:7048')
 parser.add_argument('--log-file', type=str, help='Log file location', default='natriumcast.log')
 parser.add_argument('--log-to-stdout', action='store_true', help='Log to stdout', default=False)
 
@@ -531,9 +541,35 @@ async def callback(r : web.Request):
         send_amount = prev_balance - cur_balance
         if send_amount >= 1000000000000000000000000:
             # This is a send, push notifications
-            fcm = aiofcm.FCM(fcm_sender_id, fcm_api_key)
+            #fcm = aiofcm.FCM(fcm_sender_id, fcm_api_key)
             # Send notification with generic title, send amount as body. App should have localizations and use this information at its discretion
             for t in fcm_tokens:
+                push_service = FCMNotification(api_key=fcm_api_key)
+                
+                registration_id = t
+                data_message = {
+                    "amount":str(send_amount)
+                }
+                result = push_service.notify_single_device(registration_id=registration_id, data_message=data_message)
+                print(result)
+
+
+                """
+                url = 'https://fcm.googleapis.com/fcm/send'
+                body = {  
+                    "data":{  
+                       "amount":str(send_amount)
+                    },
+                    "to":t
+                }
+
+
+                headers = {"Content-Type":"application/json",
+                        "Authorization": "key={fcm_api_key}"}
+                resp = requests.post(url, data=json.dumps(body), headers=headers)
+                print(resp.text)
+                """
+                """
                 message = aiofcm.Message(
                             device_token=t,
                             data = {
@@ -541,11 +577,42 @@ async def callback(r : web.Request):
                             },
                             priority=aiofcm.PRIORITY_HIGH
                 )
-                await fcm.send_message(message)
-            notification_title = f"Received {util.raw_to_nano(send_amount)} {'NANO' if not banano_mode else 'BANANO'}"
-            notification_body = f"Open {'Natrium' if not banano_mode else 'Kalium'} to view this transaction."
+                await fcm.send_message(message)"""
+            message_title = f"Received {util.raw_to_nano(send_amount)} {'PAW' if not banano_mode else 'BANANO'}"
+            message_body = f"Open {'Biota' if not banano_mode else 'Kalium'} to view this transaction."
             for t2 in fcm_tokens_v2:
-                message = aiofcm.Message(
+                push_service = FCMNotification(api_key=fcm_api_key)
+                
+                registration_id = t2
+                data_message = {
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                    "account": link
+                }
+                result = push_service.notify_single_device(registration_id=registration_id, message_title=message_title, click_action="FLUTTER_NOTIFICATION_CLICK", tag=link, sound="default", message_body=message_body, data_message=data_message)
+                """
+                url = 'https://fcm.googleapis.com/fcm/send'
+                body = {  
+                    "data" : {
+                        "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                        "account": link
+                    },
+                    "notification":{  
+                        "title":notification_title,
+                        "body":notification_body,
+                        "sound":"default",
+                        "tag":link
+                    },
+                    "to":t2
+                }
+
+
+                headers = {"Content-Type":"application/json",
+                        "Authorization": "key={fcm_api_key}"}
+                requests.post(url, data=json.dumps(body), headers=headers)
+                resp = requests.post(url, data=json.dumps(body), headers=headers)
+                print(resp.text)
+                """
+                """message = aiofcm.Message(
                     device_token = t2,
                     notification = {
                         "title":notification_title,
@@ -560,6 +627,7 @@ async def callback(r : web.Request):
                     priority=aiofcm.PRIORITY_HIGH
                 )
                 await fcm.send_message(message)
+                """
         return web.HTTPOk()
     except Exception:
         log.server_logger.exception("received exception in callback")

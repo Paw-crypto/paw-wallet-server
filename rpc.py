@@ -200,7 +200,7 @@ class RPC:
 
         # check for receive race condition
         # if block['type'] == 'state' and block['previous'] and block['balance'] and block['link']:
-        if block['type'] == 'state' and {'previous', 'balance', 'link'} <= set(block):
+        if block['type'] == 'state' and block['previous'] != "0" and {'previous', 'balance', 'link'} <= set(block):
             try:
                 prev_response = await self.json_post({
                     'action': 'blocks_info',
@@ -209,6 +209,8 @@ class RPC:
                 })
 
                 try:
+                    print(block['previous'])
+                    print(prev_response)
                     prev_block = json.loads(prev_response['blocks'][block['previous']]['contents'])
 
                     if prev_block['type'] != 'state' and ('balance' in prev_block):
